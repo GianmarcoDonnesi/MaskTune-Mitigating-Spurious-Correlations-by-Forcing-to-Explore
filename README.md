@@ -1,5 +1,5 @@
 <h1>MaskTune: Mitigating Spurious Correlations by Forcing to Explore</h1>
-This repository contains the code developed for the Neural Networks exam project. The work, based on reworking the solution proposed in the original paper titled `MaskTune: Mitigating Spurious Correlations by Forcing to Explore`, focused on investigating and applying strategies to mitigate spurious correlations in deep learning models, drawing inspiration from the recent development of a method called MaskTune. This represents an innovative approach to addressing a fundamental challenge in overparameterized models (i.e., models with a very high number of parameters compared to the number of examples in the training dataset): learning meaningful data representations that yield good performance on a downstream task without overfitting to spurious input features.
+This repository hosts the code developed for the Neural Networks exam project. The task, based on reworking the solution proposed in the original paper titled `MaskTune: Mitigating Spurious Correlations by Forcing to Explore`, centered on exploring and implementing techniques to reduce the impact of false correlations in deep learning architectures.
 
 <br>
 </br>
