@@ -4,12 +4,12 @@ This repository contains the code developed for the Neural Networks exam project
 <br>
 </br>
 
-<p align="left"><strong>Autor:</strong><br>
+**Autor:**  
 Gianmarco Donnesi  
-Matr. n. 2152311</p>
+Matr. n. 2152311
 
-<p align="right"><strong>Supervisor:</strong><br>
-Prof. Scardapane</p>
+**Supervisor:**  
+Prof. Scardapane
 
 
 ## Abstract
