@@ -5,7 +5,7 @@ This repository contains the code developed for the Neural Networks exam project
 </br>
 
 <div align="center">
-<img src="https://github.com/GianmarcoDonnesi/MaskTune-Mitigating-Spurious-Correlations-by-Forcing-to-Explore/blob/main/Abstract.jpg" width="800" height="280"">
+<img src="https://github.com/GianmarcoDonnesi/MaskTune-Mitigating-Spurious-Correlations-by-Forcing-to-Explore/blob/main/Abstract.jpg">
 </div>
 
 <h1>How to use</h1>
