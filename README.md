@@ -1,5 +1,5 @@
 <h1>MaskTune: Mitigating Spurious Correlations by Forcing to Explore</h1>
-This repository hosts the code developed for the Neural Networks exam project. The task, based on reworking the solution proposed in the original paper titled `**MaskTune: Mitigating Spurious Correlations by Forcing to Explore**`, focused on exploring and implementing techniques to reduce the impact of false correlations in deep learning architectures.
+This repository hosts the code developed for the Neural Networks exam project. The task, based on reworking the solution proposed in the original paper titled `<i>MaskTune: Mitigating Spurious Correlations by Forcing to Explore</i>`, focused on exploring and implementing techniques to reduce the impact of false correlations in deep learning architectures.
 
 <br>
 </br>
