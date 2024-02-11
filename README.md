@@ -4,9 +4,15 @@ This repository contains the code developed for the Neural Networks exam project
 <br>
 </br>
 
-<div align="center">
-<img src="https://github.com/GianmarcoDonnesi/MaskTune-Mitigating-Spurious-Correlations-by-Forcing-to-Explore/blob/main/Abstract.jpg">
-</div>
+**Autor:**  
+Gianmarco Donnesi  
+Matr. n. 2152311
+
+**Supervisor:**  
+Prof. Scardapane
+
+## Abstract
+The work analyzed in this report focused on investigating and applying strate- gies to mitigate spurious correlations in deep learning models, inspired by the recent development of a method called MaskTune. This represents an innovative approach to tackle a fundamental challenge in over-parametrized models (i.e., models that have a very high number of parameters compared to the number of examples in the training dataset): learning meaningful data representations that produce good performance on a downstream task without overfitting to spurious input features. This method proposes a masking strategy that prevents excessive dependency on a limited number of features, forcing the model to explore new ones by masking those previously discovered. To do this, masking is applied during the fine-tuning of a single epoch. This is a technique for adapting a pre-trained model to a new task or dataset, which allows leveraging the model’s existing knowledge, reducing the time and computational resources needed for training, and improving performance on specific tasks compared to training a model from scratch. Finally, an addi- tional selective classification task was implemented, exploiting MaskTune’s ability to promote the learning of more robust representations less dependent on poten- tially misleading or unreliable features. This would allow the model to recognize situations where the main informative features are absent or masked, opting to ab- stain from classification rather than risking an inaccurate prediction. To measure the effectiveness of MaskTune in the selective classification task, specific metrics were used to evaluate both the accuracy of the predictions, when the model decides to make them, and the ability to abstain from making decisions when the available information is not sufficient for a reliable prediction.
 
 <h1>How to use</h1>
 
