@@ -1,4 +1,3 @@
-#Preparazione del dataset CelebA
 import torch
 import torchvision
 import pandas as pd
@@ -17,7 +16,7 @@ import torchvision.models as models
 from sklearn.metrics import precision_recall_fscore_support
 
 
-# Percorsi per le immagini e per gli attributi
+# Paths for images and attributes
 IMG_PATH = './data/celeba/img_align_celeba/img_align_celeba/'
 ATTR_PATH = './data/celeba/list_attr_celeba.csv'
 PARTITION_PATH = './data/celeba/list_eval_partition.csv'
@@ -50,7 +49,7 @@ class CelebADataset(Dataset):
 
 
 
-# Definisci le trasformazioni (ad esempio ridimensionamento e normalizzazione)
+# Define transformations (e.g., resizing and normalization)
 transform = transforms.Compose([
     transforms.Resize(224),
     transforms.CenterCrop(224),
@@ -72,39 +71,40 @@ train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 valid_loader = DataLoader(valid_dataset, batch_size=32, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
-# Definisci la dimensione del subset
-subset_size = 1000  # Ad esempio, usa 1000 immagini per l'addestramento
+#If you want to train the model on a subset of CelebA
+# Define the subset size
+subset_size = 1000  # For example, use 1000 images for training
 
-# Genera indici casuali per il subset
+# Generate random indices for the subset
 train_indices = torch.randperm(len(train_dataset))[:subset_size]
 
-# Crea il subset del dataset di addestramento
+# Create the subset of the training dataset
 train_subset = Subset(train_dataset, train_indices)
 
-# Crea il DataLoader per il subset del dataset di addestramento
+# Create the DataLoader for the training dataset subset
 train_loader_subset = DataLoader(train_subset, batch_size=32, shuffle=True)
 
 
-# Definizione del modello AttentionMaskingResNet50
+# Definition of AttentionMaskingResNet50 model
 class AttentionMaskingResNet50(nn.Module):
     def __init__(self, pretrained_model, num_classes):
         super(AttentionMaskingResNet50, self).__init__()
-        # Utilizza le caratteristiche del modello pre-addestrato, escludendo gli ultimi layer
+        # Use features from the pretrained model, excluding the last layers
         self.features = nn.Sequential(*list(pretrained_model.children())[:-2])
         self.avgpool = pretrained_model.avgpool
-        # Aggiunge un generatore di maschere basato sull'output del penultimo layer
+        # Adds a mask generator based on the output of the penultimate layer
         self.mask_generator = nn.Sequential(
-            nn.Conv2d(2048, 1, kernel_size=1),  # Assumendo che l'output delle caratteristiche abbia 2048 canali
+            nn.Conv2d(2048, 1, kernel_size=1),  # Assuming the feature output has 2048 channels
             nn.Sigmoid()
         )
-        # Utilizza il numero di caratteristiche in uscita dall'avgpool per il layer fully connected
+        # Uses the number of features coming out of avgpool for the fully connected layer
         self.fc_in_features = pretrained_model.fc.in_features
         self.classifier = nn.Linear(self.fc_in_features, num_classes)
 
     def forward(self, x):
         x = self.features(x)
         mask = self.mask_generator(x)
-        # Applica la maschera direttamente alle caratteristiche prima del pooling
+        # Applies the mask directly to the features before pooling
         x = x * mask
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
@@ -114,9 +114,9 @@ class AttentionMaskingResNet50(nn.Module):
 
 
 def calculate_metrics(outputs, labels):
-    # Applica sigmoid per ottenere le probabilità
+    # Apply sigmoid to get probabilities
     probs = torch.sigmoid(outputs)
-    # Converte le probabilità in previsioni binarie
+    # Converts probabilities to binary predictions
     preds = (probs > 0.5).float()
 
     # True Positives, False Positives, True Negatives, False Negatives
@@ -125,7 +125,7 @@ def calculate_metrics(outputs, labels):
     FN = (labels * (1 - preds)).sum(dim=0)
     TN = ((1 - labels) * (1 - preds)).sum(dim=0)
 
-    # Precisione, Recall, e F1 per ogni classe, poi calcola la media
+    # Precision, Recall, and F1 for each class, then calculate the average
     precision = (TP / (TP + FP + 1e-8)).mean()
     recall = (TP / (TP + FN + 1e-8)).mean()
     f1 = 2 * (precision * recall) / (precision + recall + 1e-8)
@@ -139,38 +139,38 @@ def train_model(model, train_loader, criterion, optimizer, num_epochs, device):
     model.train()
     print('Addestramento iniziato...')
     
-    for epoch in range(num_epochs):  # loop sul dataset per un numero fissato di epoche
+    for epoch in range(num_epochs):  # loop over the dataset a fixed number of epochs
         running_loss = 0.0
         total_precision = 0.0
         total_recall = 0.0
         total_f1 = 0.0
 
         for inputs, labels in train_loader: 
-            # Ottiene gli input; i dati sono una lista di [inputs, labels]
+            # Get the inputs; data is a list of [inputs, labels]
             inputs = inputs.to(device)
             labels = labels.to(device)
 
-            # Azzera i gradienti dei parametri del modello
+            # Zero the parameter gradients
             optimizer.zero_grad()
             outputs = model(inputs)
             
             # Calculate loss
             loss = criterion(outputs, labels)
             
-            # Backward pass e ottimizzazione
+            # Backward pass e optimization
             loss.backward()
             optimizer.step()
             
-            # Calcola le metriche per il batch corrente
+            # Calculate metrics for the current batch
             precision, recall, f1 = calculate_metrics(outputs, labels)
             total_precision += precision
             total_recall += recall
             total_f1 += f1
 
-            # Stampa statistiche di addestramento
+            # Print training statistics
             running_loss += loss.item()
             
-        # Calcola la media delle metriche per l'epoca
+        # Calculate average metrics for the epoch
         avg_precision = total_precision / len(train_loader)
         avg_recall = total_recall / len(train_loader)
         avg_f1 = total_f1 / len(train_loader)
@@ -183,56 +183,57 @@ def train_model(model, train_loader, criterion, optimizer, num_epochs, device):
 
 if __name__ == '__main__':
     
-    # Impostazione degli iperparametri
+    # Setting hyperparameters
     learning_rate = 0.001
     momentum = 0.9
     batch_size = 32
     num_epochs = 20
     
-    # Imposta il device su 'mps' per utilizzare Metal Performance Shaders su Mac
+    # Set the device to 'mps' to use Metal Performance Shaders on Mac
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     
-    # 1. Addestramento iniziale senza Masking
-    # Carica una ResNet50 pre-addestrata senza componenti di masking
+    # 1. Initial training without Masking
+    
+    # Load a pretrained ResNet50 without masking components
     resnet50 = models.resnet50(pretrained=True)
     resnet50.fc = nn.Linear(resnet50.fc.in_features, num_classes)
     resnet50.to(device)
     
     
-    # Definizione della funzione di perdita per classificazione multi-etichetta
+    # Definition of the loss function for multi-label classification
     criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.SGD(resnet50.parameters(), lr=learning_rate, momentum=momentum)
             
-    # Chiamata alla funzione di addestramento sull'intero dataset
+    # Call the training function on the entire dataset
     train_model(resnet50, train_loader, criterion, optimizer, num_epochs, device)
     
     PATH1 = './resnet50.pth'
     torch.save(resnet50.state_dict(), PATH1)
     
-    # 2. Fine-tuning con Masking
+    # 2. Fine-tuning with Masking
 
-    # Carica i pesi del modello addestrato in un nuovo modello ResNet50 per il fine-tuning
+    # Load the trained model weights into a new ResNet50 model for fine-tuning
     resnet50_for_finetuning = models.resnet50(pretrained=False)
     resnet50_for_finetuning.fc = nn.Linear(resnet50.fc.in_features, num_classes)
     resnet50_for_finetuning.load_state_dict(torch.load(PATH1))
     resnet50_for_finetuning.to(device)
     
-    # Inizializzazione del modello AttentionMaskingResNet50 con i pesi del modello addestrato
+    # Initialize the AttentionMaskingResNet50 model with the trained model weights
     attention_resnet50 = AttentionMaskingResNet50(resnet50_for_finetuning, num_classes).to(device)
     
-    # Prepara il modello per il fine-tuning
+    # Prepare the model for fine-tuning
     for param in attention_resnet50.parameters():
-        param.requires_grad = True  # Opzionale: rende i parametri modificabili per il fine-tuning
+        param.requires_grad = True  # makes parameters modifiable for fine-tuning
 
-    # Inizializza l'ottimizzatore per il nuovo modello con learning rate più basso
+    # Initialize the optimizer for the new model with a lower learning rate
     optimizer_ft = optim.SGD(attention_resnet50.parameters(), lr=0.0001, momentum=0.9)
 
-    # Utilizza solo 1 epoca per il fine-tuning con masking
+    # Use only 1 epoch for fine-tuning with masking
     fine_tune_epochs = 1
 
-    # Fine-tuning del modello
+    # Fine-tuning the model
     train_model(attention_resnet50, train_loader, criterion, optimizer_ft, fine_tune_epochs, device)
     
-    # Salva il modello fine-tunato
+    # Save the fine-tuned model
     PATH2 = './attention_resnet50.pth'
     torch.save(attention_resnet50.state_dict(), PATH2)

@@ -7,18 +7,18 @@ import torch.optim as optim
 from vgg import VGGWithAttention
 
 def selective_classification(vgg_initial, vgg_finetuned, dataloader, base_confidence_threshold):
-    vgg_initial.eval()  # Imposta il primo modello in modalità valutazione
-    vgg_finetuned.eval()  # Imposta il secondo modello in modalità valutazione
+    vgg_initial.eval()  # Set the first model to evaluation mode
+    vgg_finetuned.eval()  # Set the second model to evaluation mode
     total, correct, rejected, agreements = 0, 0, 0, 0
 
-    # Definisce i pesi per le classi più difficili (bird, cat, deer, dog)
+    # Define weights for more difficult classes (bird, cat, deer, dog)
     class_difficulty_weights = {3: 0.7, 4: 0.7, 5: 0.7, 6: 0.7}
     
     with torch.no_grad():
         for data in dataloader:
             images, labels = data[0].to(device), data[1].to(device)
             
-            # Assicurati di selezionare solo l'output del modello se questo restituisce un tuple
+            # Select only the model's output if it returns a tuple
             outputs_initial_tuple = vgg_initial(images)
             outputs_initial = outputs_initial_tuple[0] if isinstance(outputs_initial_tuple, tuple) else outputs_initial_tuple
             softmax_scores_initial = F.softmax(outputs_initial, dim=1)
@@ -30,7 +30,7 @@ def selective_classification(vgg_initial, vgg_finetuned, dataloader, base_confid
             confidences_finetuned, predictions_finetuned = torch.max(softmax_scores_finetuned, 1)
             
             for idx, (confidence_finetuned, prediction_finetuned) in enumerate(zip(confidences_finetuned, predictions_finetuned)):
-                # Applica un peso alla soglia di confidenza se la classe è considerata difficile
+                # Apply a weight to the confidence threshold if the class is considered difficult
                 adjusted_confidence_threshold = base_confidence_threshold * class_difficulty_weights.get(prediction_finetuned.item(), 1)
                 
                 if prediction_finetuned == predictions_initial[idx]:
@@ -52,34 +52,34 @@ def selective_classification(vgg_initial, vgg_finetuned, dataloader, base_confid
 
 if __name__ == '__main__':
     
-    # Definisci la trasformazione dei dati
+    # Define data transformation
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    # Carica il dataset di test
+    # Load the test dataset
     testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=4, shuffle=False, num_workers=2)
     classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-    # Inizializza i modelli
+    # Initialize models
     model_initial = VGGWithAttention()
     model_finetuned = VGGWithAttention()
 
-    # Definisci il dispositivo
+    # Define the device
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     model_initial.to(device)
     model_finetuned.to(device)
 
-    # Carica lo stato dei modelli addestrati
-    PATH_INITIAL = './vgg_initial.pth'  # Percorso del modello iniziale
-    PATH_FINETUNED = './vgg_finetuned.pth'  # Percorso del modello fine-tuned
+    # Load the trained model states
+    PATH_INITIAL = './vgg_initial.pth'  
+    PATH_FINETUNED = './vgg_finetuned.pth'  
     model_initial.load_state_dict(torch.load(PATH_INITIAL, map_location=device))
     model_finetuned.load_state_dict(torch.load(PATH_FINETUNED, map_location=device))
     
 
-    # Test del modello con selective classification
+    # Test the model with selective classification
     print("\nTesting con selective classification:")
-    confidence_threshold = 0.8  # Soglia di confidenza per la selective classification
+    confidence_threshold = 0.8  # Confidence threshold for selective classification
     selective_classification(model_initial, model_finetuned, testloader, confidence_threshold)

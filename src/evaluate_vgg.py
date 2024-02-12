@@ -7,7 +7,7 @@ import torch.optim as optim
 from vgg import VGGWithAttention
 
 def evaluate_model(model, dataloader, classes):
-    model.eval()  # Imposta il modello in modalità valutazione
+    model.eval()  # Set the model to evaluation mode
     correct_pred = {classname: 0 for classname in classes}
     total_pred = {classname: 0 for classname in classes}
 
@@ -21,12 +21,12 @@ def evaluate_model(model, dataloader, classes):
                     correct_pred[classes[label]] += 1
                 total_pred[classes[label]] += 1
 
-    # Stampa l'accuratezza per ogni classe
+    # Print accuracy for each class
     for classname, correct_count in correct_pred.items():
         accuracy = 100 * float(correct_count) / total_pred[classname]
         print(f'Accuratezza per la classe {classname}: {accuracy:.2f}%')
 
-    # Calcolo e stampa l'accuratezza totale
+    # Calculate and print the overall accuracy
     total_correct = sum(correct_pred.values())
     total = sum(total_pred.values())
     overall_accuracy = 100 * float(total_correct) / total
@@ -36,37 +36,36 @@ def evaluate_model(model, dataloader, classes):
 
 if __name__ == '__main__':
     
-    # Definisci la trasformazione dei dati
+    # Define data transformation
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    # Carica il dataset di test
+    # Load the test dataset
     testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=4, shuffle=False, num_workers=2)
     classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-    # Inizializza il modello
+    # Initialize the model
     model = VGGWithAttention()
 
-    # Definisci il dispositivo
+    # Define the device
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     model.to(device)
 
-    # Carica lo stato del modello addestrato
-    PATH1 = './vgg_initial.pth'  # Assumi che il modello sia stato salvato con questo nome
+    # Load the trained model state
+    PATH1 = './vgg_initial.pth'  
     model.load_state_dict(torch.load(PATH1, map_location=device))
     
-    # Dopo l'addestramento, valuta il modello
+    # After training, evaluate the model
     print('\nValutazione del modello sul test set senza masking:')
     evaluate_model(model, testloader, classes)
     
-    # Carica lo stato del modello dopo il fine-tuning
-    PATH2 = './vgg_finetuned.pth'  # Assumi che il modello sia stato salvato con questo nome
+    # Load the state of the model after fine-tuning
+    PATH2 = './vgg_finetuned.pth' 
     model.load_state_dict(torch.load(PATH2, map_location=device))
     
-    # Dopo l'addestramento, valuta il modello
+    # After training, evaluate the model
     print('\nValutazione del modello sul test set con masking:')
     evaluate_model(model, testloader, classes)
-
