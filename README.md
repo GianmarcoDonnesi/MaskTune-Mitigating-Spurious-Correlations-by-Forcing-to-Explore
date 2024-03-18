@@ -25,3 +25,6 @@ The work analyzed in this report focused on investigating and applying strategie
 7. For `CelebA` dataset, please download `img_align_celeba` folder from <a href="https://www.kaggle.com/datasets/jessicali9530/celeba-dataset?resource=download-directory">this link</a>. After extracting it, you should see a folder named `archive`. Please cut and paste this folder into the project's `data/celeba` directory to allow the network to load the dataset correctly.
 8. To load and train the `AttentionMaskingResNet50` model on the `CelebA` dataset, you need to run the `resnet50.py` script. Additionally, you can modify parameters such as `batch_size`, `num_epochs`, `learning_rate`, `momentum` and `num_classes`to customize the training procedure according to your preferences. To train the model on a subset of the complete dataset, for computational resource availability reasons, you can modify the size of the subset by changing the variable `subset_size`.
 9. To run the selective classification task for the AttentionMaskingResNet50 model, you need to execute the script `selective_classification_resnet.py`, which evaluates the network's accuracy on the testing dataset.
+
+## License
+Unless otherwise stated, the code in this repository is licensed under [GPL-3.0 license](LICENSE). This permits reuse and distribution according to the terms of the license.
